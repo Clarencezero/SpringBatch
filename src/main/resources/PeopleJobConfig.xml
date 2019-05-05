@@ -1,0 +1,29 @@
+<beans xmlns="http://www.springframework.org/schema/beans"
+       xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xmlns:batch="http://www.springframework.org/schema/batch"
+       xsi:schemaLocation="http://www.springframework.org/schema/batch http://www.springframework.org/schema/batch/spring-batch.xsd
+            http://www.springframework.org/schema/beans http://www.springframework.org/schema/beans/spring-beans-3.0.xsd">
+    <import resource="SpringBatch.xml" />
+
+    <!--一个JOB可以包含0~N个step, 一个step可以包含0~N个tasklet,一个tasklet可以包含0~N个chunk
+        commit-interval: 提交间隔。这个是用于设置writer预备提交的数量。比如可以减轻数据库的压力、IO读写次数等
+        skippable-exception-classes: 定义忽略异常类型。
+        skip-limit: 表示如果异常超过10次skip,则JOB失败
+
+    -->
+    <job id="fileImportJob" xmlns="http://www.springframework.org/schema/batch">
+        <step id="importFileStep">
+            <tasklet>
+                <chunk reader="productReader"  processor="peopleMutiProcessor" writer="productWriter" commit-interval="1" skip-limit="1">
+                    <skippable-exception-classes>
+                        <include class="org.springframework.batch.item.file.FlatFileParseException" />
+                    </skippable-exception-classes>
+                </chunk>
+            </tasklet>
+        </step>
+
+        <listeners>
+            <listener ref="propleListner" />
+        </listeners>
+    </job>
+
+</beans>
